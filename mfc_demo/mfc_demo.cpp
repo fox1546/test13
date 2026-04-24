@@ -192,40 +192,42 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                 }
                 break;
             case IDC_BTN_MERGE:
-                if (wcslen(g_szFile1) == 0 || wcslen(g_szFile2) == 0)
                 {
-                    MessageBoxW(hWnd, L"请先选择两个MP3文件！", L"提示", MB_OK | MB_ICONWARNING);
+                    if (wcslen(g_szFile1) == 0 || wcslen(g_szFile2) == 0)
+                    {
+                        MessageBoxW(hWnd, L"请先选择两个MP3文件！", L"提示", MB_OK | MB_ICONWARNING);
+                        break;
+                    }
+                    
+                    // 打开保存文件对话框
+                    OPENFILENAMEW ofn = {0};
+                    WCHAR szOutputFile[MAX_PATH] = {0};
+                    
+                    ofn.lStructSize = sizeof(ofn);
+                    ofn.hwndOwner = hWnd;
+                    ofn.lpstrFile = szOutputFile;
+                    ofn.nMaxFile = MAX_PATH;
+                    ofn.lpstrFilter = L"MP3文件 (*.mp3)\0*.mp3\0所有文件 (*.*)\0*.*\0";
+                    ofn.nFilterIndex = 1;
+                    ofn.lpstrFileTitle = NULL;
+                    ofn.nMaxFileTitle = 0;
+                    ofn.lpstrInitialDir = NULL;
+                    ofn.Flags = OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY;
+                    ofn.lpstrDefExt = L"mp3";
+                    
+                    if (GetSaveFileNameW(&ofn))
+                    {
+                        if (MergeMp3Files(g_szFile1, g_szFile2, szOutputFile))
+                        {
+                            MessageBoxW(hWnd, L"MP3文件合成成功！", L"提示", MB_OK | MB_ICONINFORMATION);
+                        }
+                        else
+                        {
+                            MessageBoxW(hWnd, L"MP3文件合成失败！", L"错误", MB_OK | MB_ICONERROR);
+                        }
+                    }
                     break;
                 }
-                
-                // 打开保存文件对话框
-                OPENFILENAMEW ofn = {0};
-                WCHAR szOutputFile[MAX_PATH] = {0};
-                
-                ofn.lStructSize = sizeof(ofn);
-                ofn.hwndOwner = hWnd;
-                ofn.lpstrFile = szOutputFile;
-                ofn.nMaxFile = MAX_PATH;
-                ofn.lpstrFilter = L"MP3文件 (*.mp3)\0*.mp3\0所有文件 (*.*)\0*.*\0";
-                ofn.nFilterIndex = 1;
-                ofn.lpstrFileTitle = NULL;
-                ofn.nMaxFileTitle = 0;
-                ofn.lpstrInitialDir = NULL;
-                ofn.Flags = OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY;
-                ofn.lpstrDefExt = L"mp3";
-                
-                if (GetSaveFileNameW(&ofn))
-                {
-                    if (MergeMp3Files(g_szFile1, g_szFile2, szOutputFile))
-                    {
-                        MessageBoxW(hWnd, L"MP3文件合成成功！", L"提示", MB_OK | MB_ICONINFORMATION);
-                    }
-                    else
-                    {
-                        MessageBoxW(hWnd, L"MP3文件合成失败！", L"错误", MB_OK | MB_ICONERROR);
-                    }
-                }
-                break;
             default:
                 return DefWindowProc(hWnd, message, wParam, lParam);
             }
